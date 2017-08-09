@@ -1,1 +1,7 @@
-/on-create
+on-create
+*.o
+.env
+.depend
+firmware.elf
+firmware.hex
+firmware.map

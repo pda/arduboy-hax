@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <stdint.h>
+#include <util/delay.h>
 
 #include "display.h"
 #include "spi.h"
@@ -17,19 +18,20 @@ int main() {
   struct led_t red = {.port = &PORTB, .ddr = &DDRB, .mask = 1<<6};
   struct led_t green = {.port = &PORTB, .ddr = &DDRB, .mask = 1<<7};
   struct led_t blue = {.port = &PORTB, .ddr = &DDRB, .mask = 1<<5};
-  LED_INIT(red);
-  LED_INIT(green);
-  LED_INIT(blue);
+  LED_INIT(red); LED_OFF(red);
+  LED_INIT(green); LED_OFF(green);
+  LED_INIT(blue); LED_OFF(blue);
 
   spi_init();
   display_init();
 
-  // test pattern
-  display_select_data();
-  for (int i = 0; i < (128*64/8); i++) {
-    spi_send_8((uint8_t)i);
+  // test screen fill
+  for (uint8_t y = 0; y < DISPLAY_HEIGHT; y++) {
+    for (uint8_t x = 0; x < DISPLAY_WIDTH; x++) {
+      display_px(x, y, 1);
+      display_draw_buffer();
+    }
   }
-  display_deselect();
 
   // d-pad controls RGB LED
   PORTF |= 0b11110000; // d-pad pull-ups

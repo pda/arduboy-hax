@@ -22,7 +22,7 @@ CFLAGS = $(COMPILEFLAGS) \
 
 ASFLAGS = $(COMPILEFLAGS)
 
-SOURCES = main.c
+SOURCES = main.c display.c spi.c
 OBJECTS = $(SOURCES:.c=.o)
 
 .PHONY: all

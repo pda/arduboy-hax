@@ -29,12 +29,16 @@ OBJECTS = $(SOURCES:.c=.o)
 all: firmware.hex
 
 .PHONY: clean
-clean:
+clean: clean-tools
 	rm -f .depend firmware.elf firmware.hex $(OBJECTS)
 
 .PHONY: burn
 burn: firmware.hex
 	avrdude $(AVRDUDE_FLAGS) -U $<
+
+.PHONY: watch
+watch: tools/on-create
+	tools/on-create $(ISP_PORT) make burn
 
 firmware.hex: firmware.elf
 	avr-objcopy -j .text -j .data -O ihex $< $@
@@ -48,8 +52,10 @@ firmware.elf: $(OBJECTS)
 	cat .depend
 include .depend
 
-watch: on-create
-	./on-create $(ISP_PORT) make burn
 
-on-create: on-create.c
+.PHONY: clean-tools
+clean-tools:
+	rm -f tools/on-create
+
+tools/on-create: tools/on-create.c
 	clang $< -o $@

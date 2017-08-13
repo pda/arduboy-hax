@@ -5,6 +5,8 @@
 #include "display.h"
 #include "spi.h"
 
+#include "images/pda.h"
+
 struct led_t {
   volatile uint8_t * port;
   volatile uint8_t * ddr;
@@ -25,13 +27,10 @@ int main() {
   spi_init();
   display_init();
 
-  // test screen fill
-  for (uint8_t y = 0; y < DISPLAY_HEIGHT; y++) {
-    for (uint8_t x = 0; x < DISPLAY_WIDTH; x++) {
-      display_px(x, y, 1);
-      display_draw_buffer();
-    }
-  }
+  display_image(images_pda_png);
+  display_scroll_start();
+  _delay_ms(2000);
+  display_scroll_stop();
 
   // d-pad controls RGB LED
   PORTF |= 0b11110000; // d-pad pull-ups

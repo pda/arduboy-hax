@@ -25,6 +25,10 @@
 #define SSD1306_MEMORYMODE          0x20
 #define SSD1306_SETCOLUMNADDR       0x21
 #define SSD1306_SETPAGEADDR         0x22
+#define SSD1306_CONTSCROLLH         0x26
+#define SSD1306_CONTSCROLLVH        0x28
+#define SSD1306_DEACTIVATESCROLL    0x2E
+#define SSD1306_ACTIVATESCROLL      0x2F
 #define SSD1306_SETSTARTLINE        0x40
 #define SSD1306_SETCONTRAST         0x81
 #define SSD1306_CHARGEPUMP          0x8D
@@ -46,11 +50,13 @@
 #define SSD1306_SETVCOMDETECT       0xDB
 
 
-uint8_t display_buffer[SSD1306_PAGES * SSD1306_COLS];
-
 void display_init();
 void display_draw_buffer();
+void display_image(const uint8_t *);
 void display_px(uint8_t x, uint8_t y, uint8_t on);
 void display_select_cmd();
 void display_select_data();
 void display_deselect();
+void display_set_dirty();
+void display_scroll_start();
+void display_scroll_stop();

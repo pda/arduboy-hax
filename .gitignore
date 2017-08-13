@@ -1,4 +1,5 @@
 tools/on-create
+tools/png2c
 *.o
 .env
 .depend

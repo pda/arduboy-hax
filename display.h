@@ -60,3 +60,4 @@ void display_deselect();
 void display_set_dirty();
 void display_scroll_start();
 void display_scroll_stop();
+void display_test_things();

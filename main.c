@@ -28,12 +28,18 @@ int main() {
   display_init();
 
   display_image(images_pda_png);
+  _delay_ms(500);
   display_scroll_start();
   _delay_ms(2000);
   display_scroll_stop();
+  _delay_ms(500);
+
+  PORTF |= 0b11110000; // d-pad pull-ups
+  PORTE |= 1<<6; // A pull-up
+  PORTB |= 1<<4; // B pull-up
+  display_test_things();
 
   // d-pad controls RGB LED
-  PORTF |= 0b11110000; // d-pad pull-ups
   while (1) {
     !(PINF & 1<<5) ? LED_ON(red) : LED_OFF(red); // L
     !(PINF & 1<<6) ? LED_ON(green) : LED_OFF(green); // R

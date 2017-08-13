@@ -25,6 +25,9 @@ ASFLAGS = $(COMPILEFLAGS)
 SOURCES = main.c display.c spi.c
 OBJECTS = $(SOURCES:.c=.o)
 
+PNGS = $(wildcard images/*.png)
+PNG_OUT = $(PNGS:.png=.h)
+
 .PHONY: all
 all: firmware.hex
 
@@ -46,16 +49,21 @@ firmware.hex: firmware.elf
 firmware.elf: $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS)
 
-.depend: $(SOURCES)
+.depend: $(SOURCES) $(PNG_OUT)
 	rm -f -- .depend
 	$(CC) $(CFLAGS) -MM $^ > .depend;
 	cat .depend
 include .depend
 
+images/%.h: images/%.png tools/png2c
+	tools/png2c $< >$@
 
 .PHONY: clean-tools
 clean-tools:
-	rm -f tools/on-create
+	rm -f tools/on-create tools/png2c
 
 tools/on-create: tools/on-create.c
 	clang $< -o $@
+
+tools/png2c: tools/png2c.c
+	clang -lpng -lz $< -o $@

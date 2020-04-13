@@ -30,9 +30,9 @@ int main() {
   display_image(images_pda_png);
   _delay_ms(500);
   display_scroll_start();
-  _delay_ms(2000);
+  _delay_ms(1900);
   display_scroll_stop();
-  _delay_ms(500);
+  _delay_ms(1000);
 
   PORTF |= 0b11110000; // d-pad pull-ups
   PORTE |= 1<<6; // A pull-up

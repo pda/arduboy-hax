@@ -1,5 +1,6 @@
 #pragma once
 #include <avr/io.h>
+#include <stdbool.h>
 
 // Arduboy display: SSD1306 128x64 1-bit OLED, SPI
 // CLK:  PB1
@@ -49,6 +50,17 @@
 #define SSD1306_SETCOMPINS          0xDA
 #define SSD1306_SETVCOMDETECT       0xDB
 
+uint8_t display_buffer[SSD1306_PAGES * SSD1306_COLS];
+
+struct sprite_t {
+  uint8_t data[8];
+  uint8_t x;
+  uint8_t y;
+  int32_t x_vel;
+  int32_t y_vel;
+  bool gnd;
+  int8_t jmp;
+};
 
 void display_init();
 void display_clear_buffer();
@@ -62,4 +74,3 @@ void display_set_clean();
 void display_set_dirty();
 void display_scroll_start();
 void display_scroll_stop();
-void display_test_things();

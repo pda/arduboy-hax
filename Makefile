@@ -22,7 +22,7 @@ CFLAGS = $(COMPILEFLAGS) \
 
 ASFLAGS = $(COMPILEFLAGS)
 
-SOURCES = main.c display.c spi.c
+SOURCES = main.c display.c spi.c game.c
 OBJECTS = $(SOURCES:.c=.o)
 
 PNGS = $(wildcard images/*.png)

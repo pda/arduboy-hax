@@ -4,6 +4,7 @@
 
 #include "display.h"
 #include "spi.h"
+#include "game.h"
 
 #include "images/pda.h"
 
@@ -37,12 +38,13 @@ int main() {
   PORTF |= 0b11110000; // d-pad pull-ups
   PORTE |= 1<<6; // A pull-up
   PORTB |= 1<<4; // B pull-up
-  display_test_things();
+
+  game();
 
   // d-pad controls RGB LED
-  while (1) {
-    !(PINF & 1<<5) ? LED_ON(red) : LED_OFF(red); // L
-    !(PINF & 1<<6) ? LED_ON(green) : LED_OFF(green); // R
-    !(PINF & 1<<4) ? LED_ON(blue) : LED_OFF(blue); // D
-  }
+  // while (1) {
+  //   !(PINF & 1<<5) ? LED_ON(red) : LED_OFF(red); // L
+  //   !(PINF & 1<<6) ? LED_ON(green) : LED_OFF(green); // R
+  //   !(PINF & 1<<4) ? LED_ON(blue) : LED_OFF(blue); // D
+  // }
 }

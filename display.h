@@ -51,12 +51,14 @@
 
 
 void display_init();
+void display_clear_buffer();
 void display_draw_buffer();
 void display_image(const uint8_t *);
 void display_px(uint8_t x, uint8_t y, uint8_t on);
 void display_select_cmd();
 void display_select_data();
 void display_deselect();
+void display_set_clean();
 void display_set_dirty();
 void display_scroll_start();
 void display_scroll_stop();

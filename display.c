@@ -38,12 +38,14 @@ void display_init() {
   for (int8_t i = 0; i < sizeof(display_init_program); i++) {
     spi_send_8(display_init_program[i]);
   }
-  // clear buffer
+  display_clear_buffer();
+  display_set_dirty(); // unknown OLED RAM state
+}
+
+void display_clear_buffer() {
   for (int i = 0; i < sizeof(display_buffer); i++) {
     display_buffer[i] = 0x00;
   }
-  // mark entire buffer dirty; unknown OLED RAM state
-  display_set_dirty();
 }
 
 void display_draw_buffer() {
@@ -66,11 +68,7 @@ void display_draw_buffer() {
       spi_send_8(display_buffer[(page * SSD1306_COLS) + col]);
     }
   }
-  // clear dirty state
-  dirty_page_min = SSD1306_PAGE_MAX;
-  dirty_page_max = 0;
-  dirty_col_min = SSD1306_COL_MAX;
-  dirty_col_max = 0;
+  display_set_clean();
 }
 
 void display_image(const uint8_t * src) {
@@ -120,8 +118,14 @@ void display_deselect() {
   PORTD |= 1<<6; // CS high
 }
 
+void display_set_clean() {
+  dirty_page_min = SSD1306_PAGE_MAX;
+  dirty_page_max = 0;
+  dirty_col_min = SSD1306_COL_MAX;
+  dirty_col_max = 0;
+}
+
 void display_set_dirty() {
-  // mark entire buffer dirty; unknown OLED RAM state
   dirty_page_min = 0;
   dirty_page_max = SSD1306_PAGE_MAX;
   dirty_col_min = 0;

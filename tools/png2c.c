@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   const int sig_bytes = 8;
   uint8_t header[8];
   if (fread(header, 1, sig_bytes, fp) != sig_bytes) {
-    perror("fread");
+    perror("failed to read signature; fread");
     exit(1);
   }
   if (!png_check_sig(header, sig_bytes)) {
@@ -57,18 +57,29 @@ int main(int argc, char **argv) {
   bool has_color = color_type & PNG_COLOR_MASK_COLOR;
   bool has_alpha = color_type & PNG_COLOR_MASK_ALPHA;
 
+  char * color_type_name;
+  switch (color_type) {
+    case PNG_COLOR_TYPE_GRAY: color_type_name = "PNG_COLOR_TYPE_GRAY"; break;
+    case PNG_COLOR_TYPE_GRAY_ALPHA: color_type_name= "PNG_COLOR_TYPE_GRAY_ALPHA"; break;
+    case PNG_COLOR_TYPE_PALETTE: color_type_name= "PNG_COLOR_TYPE_PALETTE"; break;
+    case PNG_COLOR_TYPE_RGB: color_type_name= "PNG_COLOR_TYPE_RGB"; break;
+    case PNG_COLOR_TYPE_RGB_ALPHA: color_type_name= "PNG_COLOR_TYPE_RGB_ALPHA"; break;
+    default: color_type_name = "unknown";
+  }
+
   fprintf(
     stderr,
-    "png2c transformed source: %lux%lu %d-bit palette:%s color:%s alpha:%s\n",
+    "png2c transformed source: %lux%lu type:%s depth:%d palette:%s color:%s alpha:%s\n",
     (unsigned long)width,
     (unsigned long)height,
+    color_type_name,
     bit_depth,
     has_palette ? "yes" : "no",
     has_color ? "yes" : "no",
     has_alpha ? "yes" : "no"
   );
-  if (color_type != PNG_COLOR_TYPE_RGB) {
-    fprintf(stderr, "expected 24-bit RGB after PNG_TRANSFORM_EXPAND");
+  if (color_type != PNG_COLOR_TYPE_RGB && color_type != PNG_COLOR_TYPE_GRAY) {
+    fprintf(stderr, "expected grayscale or 24-bit RGB after PNG_TRANSFORM_EXPAND");
     exit(1);
   }
 
@@ -78,11 +89,20 @@ int main(int argc, char **argv) {
   png_bytepp row_pointers = png_get_rows(png_ptr, png_info_ptr);
   for (int y = 0; y < height; y += 8) {
     for (int x = 0; x < width; x++) {
-      int i = x * 3; // offset of 24-bit RGB data in row
       *target_byte = 0x00;
       for (int bit = 0; bit <= 7; bit++) {
+        if (y+bit >= height) continue; // image height not divisible by 8
         png_bytep row = row_pointers[y + bit];
-        if (row[i] | row[i+1] | row[i+2]) {
+        char pixel_on;
+        switch (color_type) {
+          case PNG_COLOR_TYPE_RGB: // 24-bit (three byte) RGB data
+            pixel_on = row[x*3] | row[x*3 + 1] | row[x*3 + 2];
+            break;
+          case PNG_COLOR_TYPE_GRAY:
+            pixel_on = row[x];
+            break;
+        }
+        if (pixel_on) {
           *target_byte |= (1<<bit);
         }
       }
@@ -105,12 +125,24 @@ int main(int argc, char **argv) {
     var_name_p++;
   }
   printf("#include <avr/pgmspace.h>\n");
+  for (int y = 0; y < height; y++) {
+    printf("//%3d| ", y);
+    for (int x = 0; x < width; x++) {
+      int offset = x + y/8*width;
+      if (target_data[offset] & (1 << (y%8))) {
+        printf(" #");
+      } else {
+        printf("  ");
+      }
+    }
+    printf(" |\n");
+  }
   printf("const uint8_t PROGMEM %s[] = {\n", var_name);
   for (int i = 0; i < sizeof(target_data); i++) {
     if (i % 16 == 0) {
       printf("  ");
     }
-    printf("0x%02x,", target_data[i]);
+    printf("0x%02X,", target_data[i]);
     putchar(i % 16 == 15 ? '\n' : ' ');
   }
   printf("};\n");

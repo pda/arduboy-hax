@@ -6,6 +6,8 @@
 #include "display.h"
 #include "spi.h"
 
+#include "images/mockup.h"
+
 static uint8_t display_buffer[SSD1306_PAGES * SSD1306_COLS];
 static uint8_t dirty_page_min, dirty_page_max, dirty_col_min, dirty_col_max;
 
@@ -159,6 +161,9 @@ struct sprite_t {
 };
 
 void display_test_things() {
+  display_image(images_mockup_png);
+  _delay_ms(2000);
+
   // background
   for (int i = 0; i < sizeof(display_buffer); i += 16) {
     display_buffer[i+8] = 0x08;

@@ -1,3 +1,4 @@
+#pragma once
 #include <avr/pgmspace.h>
 //  0|                                  #   #   #   #   #                                               #   #   #   #   #                                               #   #   #   #   #                                               #   #   #   #   #               |
 //  1|                                                                                                                                                                                                                                                                  |

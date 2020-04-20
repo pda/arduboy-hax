@@ -5,26 +5,12 @@
 #include "display.h"
 #include "spi.h"
 #include "game.h"
+#include "led.h"
 
 #include "images/pda.h"
 
-struct led_t {
-  volatile uint8_t * port;
-  volatile uint8_t * ddr;
-  uint8_t mask;
-};
-#define LED_INIT(led) (*led.ddr |= led.mask)
-#define LED_ON(led) (*led.port &= ~led.mask)
-#define LED_OFF(led) (*led.port |= led.mask)
-
 int main() {
-  struct led_t red = {.port = &PORTB, .ddr = &DDRB, .mask = 1<<6};
-  struct led_t green = {.port = &PORTB, .ddr = &DDRB, .mask = 1<<7};
-  struct led_t blue = {.port = &PORTB, .ddr = &DDRB, .mask = 1<<5};
-  LED_INIT(red); LED_OFF(red);
-  LED_INIT(green); LED_OFF(green);
-  LED_INIT(blue); LED_OFF(blue);
-
+  led_init();
   spi_init();
   display_init();
 

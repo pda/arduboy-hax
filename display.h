@@ -53,11 +53,16 @@
 uint8_t display_buffer[SSD1306_PAGES * SSD1306_COLS];
 
 struct sprite_t {
-  uint8_t data[8];
+  uint8_t * frame;
+  uint8_t frames[8][8];
   uint8_t x;
   uint8_t y;
+  uint8_t x_prev;
+  uint8_t y_prev;
   int32_t x_vel;
   int32_t y_vel;
+  bool flip;
+  bool crouch;
   bool gnd;
   int8_t jmp;
 };
@@ -72,5 +77,7 @@ void display_select_data();
 void display_deselect();
 void display_set_clean();
 void display_set_dirty();
+void display_set_dirty_sprite(struct sprite_t);
 void display_scroll_start();
 void display_scroll_stop();
+void sprite_move(struct sprite_t *, uint8_t x, uint8_t y);

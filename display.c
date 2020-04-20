@@ -5,6 +5,11 @@
 
 #include "display.h"
 #include "spi.h"
+#include "led.h"
+
+// private headers
+uint8_t min_uint8(uint8_t a, uint8_t b);
+uint8_t max_uint8(uint8_t a, uint8_t b);
 
 static uint8_t dirty_page_min, dirty_page_max, dirty_col_min, dirty_col_max;
 
@@ -94,6 +99,10 @@ void display_px(uint8_t x, uint8_t y, uint8_t on) {
   if (col < dirty_col_min) dirty_col_min = col;
   if (col > dirty_col_max) dirty_col_max = col;
 
+  if (dirty_col_max >= 128) {
+    LED_ON(led_red);
+  }
+
   uint16_t offset = (page * DISPLAY_WIDTH) + col;
   uint8_t mask = (1 << (y % 8));
   if (on) {
@@ -131,6 +140,34 @@ void display_set_dirty() {
   dirty_col_max = SSD1306_COL_MAX;
 }
 
+void display_set_dirty_sprite(struct sprite_t s) {
+  uint8_t page_top = min_uint8(s.y, s.y_prev) / 8;
+  uint8_t page_bot = (max_uint8(s.y, s.y_prev) + 8) / 8;
+  uint8_t col_l = min_uint8(s.x, s.x_prev);
+  uint8_t col_r = max_uint8(s.x, s.x_prev) + 8;
+
+  if (page_top < dirty_page_min) dirty_page_min = page_top;
+  if (page_bot > dirty_page_max) dirty_page_max = page_bot;
+  if (col_l < dirty_col_min) dirty_col_min = col_l;
+  if (col_r > dirty_col_max) dirty_col_max = col_r;
+}
+
+uint8_t min_uint8(uint8_t a, uint8_t b) {
+  if (b < a) {
+    return b;
+  } else {
+    return a;
+  }
+}
+
+uint8_t max_uint8(uint8_t a, uint8_t b) {
+  if (b > a) {
+    return b;
+  } else {
+    return a;
+  }
+}
+
 void display_scroll_start() {
   display_select_cmd();
   spi_send_8(SSD1306_CONTSCROLLVH | 0b1);
@@ -145,4 +182,11 @@ void display_scroll_start() {
 void display_scroll_stop() {
   display_select_cmd();
   spi_send_8(SSD1306_DEACTIVATESCROLL);
+}
+
+void sprite_move(struct sprite_t * s, uint8_t x, uint8_t y) {
+  s->x_prev = s->x;
+  s->y_prev = s->y;
+  s->x = x;
+  s->y = y;
 }

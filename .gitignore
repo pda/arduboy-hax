@@ -6,3 +6,6 @@ tools/png2c
 firmware.elf
 firmware.hex
 firmware.map
+
+# clangd LSP flags (see tools/Makefile)
+tools/compile_flags.txt

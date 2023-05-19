@@ -22,3 +22,19 @@ I/O map
 |         |         |     |
 | SPKR1   |       5 | PC6 |
 | SPKR2   |      13 | PC7 |
+
+
+Tools
+-----
+
+`tools/` has some bespoke odds and ends:
+
+- `png2c.c` -> `png2c`: converts PNGs to C header files
+- `on-create.c` -> `oncreate`: run a command when a file (or USB device!) is created (Linux only)
+
+Toolchain
+---------
+
+I think my previous (2017, 2020) work was on Arch Linux using the avr-gcc etc packages.
+
+For M1 macOS in 2023 see https://github.com/osx-cross/homebrew-avr

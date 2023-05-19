@@ -32,16 +32,19 @@ PNG_OUT = $(PNGS:.png=.h)
 all: firmware.hex
 
 .PHONY: clean
-clean: clean-tools
+clean:
 	rm -f .depend firmware.elf firmware.hex $(OBJECTS)
 
 .PHONY: burn
 burn: firmware.hex
 	avrdude $(AVRDUDE_FLAGS) -U $<
 
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S), Linux)
 .PHONY: watch
-watch: tools/on-create
+watch:
 	tools/on-create $(ISP_PORT) make burn
+endif
 
 firmware.hex: firmware.elf
 	avr-objcopy -j .text -j .data -O ihex $< $@
@@ -49,21 +52,10 @@ firmware.hex: firmware.elf
 firmware.elf: $(OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS)
 
+images/%.h: images/%.png tools
+	tools/png2c $< >$@
+
 .depend: $(SOURCES) $(PNG_OUT)
 	rm -f -- .depend
 	$(CC) $(CFLAGS) -MM $^ > .depend;
-	cat .depend
 include .depend
-
-images/%.h: images/%.png tools/png2c
-	tools/png2c $< >$@
-
-.PHONY: clean-tools
-clean-tools:
-	rm -f tools/on-create tools/png2c
-
-tools/on-create: tools/on-create.c
-	clang $< -o $@
-
-tools/png2c: tools/png2c.c
-	clang -lpng -lz $< -o $@

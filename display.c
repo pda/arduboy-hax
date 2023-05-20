@@ -2,6 +2,7 @@
 #include <avr/pgmspace.h>
 #include <util/delay.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "display.h"
 #include "spi.h"
@@ -12,6 +13,8 @@ uint8_t min_uint8(uint8_t a, uint8_t b);
 uint8_t max_uint8(uint8_t a, uint8_t b);
 
 static uint8_t dirty_page_min, dirty_page_max, dirty_col_min, dirty_col_max;
+
+uint8_t display_buffer[DISPLAY_BUFFER_SIZE];
 
 // https://github.com/Arduboy/Arduboy/blob/3c409fef/src/core/core.cpp#L25
 const uint8_t display_init_program[] = {
@@ -46,10 +49,18 @@ void display_init() {
   display_set_dirty(); // unknown OLED RAM state
 }
 
+uint8_t * display_get_buffer() {
+  return display_buffer;
+}
+
 void display_clear_buffer() {
   for (int i = 0; i < sizeof(display_buffer); i++) {
     display_buffer[i] = 0x00;
   }
+}
+
+void display_load_buffer(const uint8_t * src) {
+  memcpy(display_buffer, src, sizeof(display_buffer));
 }
 
 void display_draw_buffer() {

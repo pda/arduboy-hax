@@ -9,11 +9,11 @@
 #include "images/plat-left.h"
 #include "images/plat-right.h"
 
-uint8_t background_buffer[sizeof(display_buffer)];
+uint8_t background_buffer[DISPLAY_BUFFER_SIZE];
 
 void game() {
   // floor
-  for (int i = 7*SSD1306_COLS; i < sizeof(display_buffer); i += sizeof(images_plat_png)) {
+  for (int i = 7*SSD1306_COLS; i < DISPLAY_BUFFER_SIZE; i += sizeof(images_plat_png)) {
     memcpy(background_buffer + i, images_plat_png, sizeof(images_plat_png));
   }
   // platform
@@ -137,8 +137,11 @@ void game() {
       player.frame = player.frames[0]; // player-a
     }
 
-    memcpy(display_buffer, background_buffer, sizeof(background_buffer));
+    display_load_buffer(background_buffer);
+    //memcpy(display_buffer, background_buffer, sizeof(background_buffer));
     //memcpy(display_buffer + player.x, *player.frame, sizeof(*player.frame));
+
+    uint8_t * display_buffer = display_get_buffer();
 
     int row = player.y / 8;
     uint8_t bit_offset = player.y % 8;

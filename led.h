@@ -11,8 +11,8 @@ struct led_t {
 #define LED_ON(led) (*led.port &= ~led.mask)
 #define LED_OFF(led) (*led.port |= led.mask)
 
-struct led_t led_red;
-struct led_t led_green;
-struct led_t led_blue;
+extern struct led_t led_red;
+extern struct led_t led_green;
+extern struct led_t led_blue;
 
 void led_init();

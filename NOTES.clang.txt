@@ -1,0 +1,149 @@
+Clang
+=====
+
+Compiling with clang results in garbled display.
+Mostly likely related to PROGMEM? (Or, maybe not??)
+
+The splash screen from main.c/main.o seems to work okay.
+the game.c/game.o code only partially overwrites it:
+
+.----------------------------------------------------------------.
+|#####################################################           |
+|#####################################################           |
+|#####################################################           |
+|#####################################################           |
+|#####################################################           |
+|#####################################################           |
+|#####################################################           |
+|#####################################################           |
+|#####################################################           |
+|#####################################################           |
+|                                                                |
+|                                                                |
+|                                                                |
+|                                                                |
+|                                                                |
+|                                                                |
+`----------------------------------------------------------------'
+
+.----------------------------------------------------------------.
+|################################################################|
+|################################################################|
+|################################################################|
+|################################################################|
+|                                                                |
+|                                                                |
+|                                                                |
+|                                                                |
+|                                                                |
+|                                                                |
+|                                                                |
+|                                                                |
+|                                                                |
+|                                                                |
+|                                                                |
+|                                                                |
+`----------------------------------------------------------------'
+
+Sometimes the garbled display includes all the `struct sprite_t player` images, suggesting it's
+displaying from the wrong part of RAM.
+
+Input doesn't seem to update the display at all.
+
+Turning off/on gets different glitches each time, which is interestingly non-deterministic.
+Perhaps the result of accessing some uninitialized SRAM?
+
+
+Compiling *.c -> *.o files with clang is the problem.
+Linking *.o files into firmware.elf works via avr-gcc or clang (which delegates to avr-gcc's ld)
+
+compiler | linker | result
+---------|--------|-------
+clang    | gcc    | bad
+clang    | clang  | bad
+gcc      | gcc    | good
+gcc      | clang  | good
+
+
+avr-gcc PROGMEM uses progmem.data in game.o etc:
+
+    pda@oak ~/code/arduboy-hax $ llvm-objdump -t main.o | grep progmem
+    00000000 l    d  .progmem.data  00000000 .progmem.data
+    00000000 g     O .progmem.data  00000400 images_pda_png
+    pda@oak ~/code/arduboy-hax $ avr-objdump -t game.o | grep progmem
+    00000000 l    d  .progmem.data  00000000 .progmem.data
+    00000000 g     O .progmem.data  00000008 images_plat_right_png
+    00000008 g     O .progmem.data  00000008 images_plat_left_png
+    00000010 g     O .progmem.data  00000008 images_plat_png
+
+but .text in firmware.elf:
+
+    pda@oak ~/code/arduboy-hax $ llvm-objdump -t firmware.elf | grep images
+    000004b4 g     O .text  00000008 images_plat_left_png
+    000004bc g     O .text  00000008 images_plat_png
+    000000ac g     O .text  00000400 images_pda_png
+    000004ac g     O .text  00000008 images_plat_right_png
+
+However they're uniquely flagged:
+
+    pda@oak ~/code/arduboy-hax $ llvm-objdump -t firmware.elf | grep 'g     O .text'
+    000004b4 g     O .text  00000008 images_plat_left_png
+    000004bc g     O .text  00000008 images_plat_png
+    000000ac g     O .text  00000400 images_pda_png
+    000004ac g     O .text  00000008 images_plat_right_png
+
+g:     global
+O:     The symbol is the name of a function (F) or a file (f) or an object (O) or just a normal symbol (a space).
+.text: in the .text section
+
+
+From `man avr-objdump`:
+
+           The flag characters are divided into 7 groups as follows:
+
+
+
+Both clang and gcc include the .progmem.data in the .o files:
+
+
+    pda@oak ~/code/arduboy-hax $ avr-objdump --disassemble builds/gcc/game.o --section .progmem.data
+
+    builds/gcc/game.o:     file format elf32-avr
+
+
+    Disassembly of section .progmem.data:
+
+    00000000 <images_plat_right_png>:
+       0:   23 05 17 07 0b 02 03 01                             #.......
+
+    00000008 <images_plat_left_png>:
+       8:   01 09 03 07 0b 12 06 0b                             ........
+
+    00000010 <images_plat_png>:
+      10:   43 15 07 07 0b 22 06 0b                             C...."..
+
+    pda@oak ~/code/arduboy-hax $ avr-objdump --disassemble builds/clang/game.o --section .progmem.data
+
+    builds/clang/game.o:     file format elf32-avr
+
+
+    Disassembly of section .progmem.data:
+
+    00000000 <images_plat_png>:
+       0:   43 15 07 07 0b 22 06 0b                             C...."..
+
+    00000008 <images_plat_left_png>:
+       8:   01 09 03 07 0b 12 06 0b                             ........
+
+    00000010 <images_plat_right_png>:
+      10:   23 05 17 07 0b 02 03 01                             #.......
+
+
+
+The gcc elf mentions a pair of bytes from images_plat_png, but the clang elf doesn't:
+
+    pda@oak ~/code/arduboy-hax $ avr-objdump -D builds/gcc/firmware.elf | grep '43 15'
+      800144:       43 15           cp      r20, r3
+     4bc:   43 15           cp      r20, r3
+    pda@oak ~/code/arduboy-hax $ avr-objdump -D builds/clang/firmware.elf | grep '43 15'
+    (nothing)

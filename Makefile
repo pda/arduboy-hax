@@ -5,7 +5,10 @@ AVRDUDE_FLAGS = -q -q \
 								-c $(ISP_PROGRAMMER) \
 								-P $(ISP_PORT)
 
+# CC can be set to clang externally
+ifeq ($(CC), cc)
 CC = avr-gcc
+endif
 
 LDFLAGS = -Wl,-Map,firmware.map
 
@@ -28,6 +31,13 @@ CFLAGS = $(COMPILEFLAGS) \
 				 -std=c99
 
 ASFLAGS = $(COMPILEFLAGS)
+
+ifeq ($(CC), clang)
+LDFLAGS += -L/opt/homebrew/opt/avr-gcc/lib/avr-gcc/9/gcc/avr/9.4.0
+COMPILEFLAGS += --target=avr \
+								--sysroot=/opt/homebrew/opt/avr-gcc \
+								-isystem /opt/homebrew/opt/avr-gcc/avr/include
+endif
 
 SOURCES = main.c display.c spi.c led.c game.c
 OBJECTS = $(SOURCES:.c=.o)

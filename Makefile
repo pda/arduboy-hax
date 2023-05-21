@@ -44,6 +44,10 @@ ifeq ($(UNAME_S), Linux)
 .PHONY: watch
 watch:
 	tools/on-create $(ISP_PORT) make burn
+else ifeq ($(UNAME_S), Darwin)
+.PHONY: watch
+watch:
+	fswatch --monitor poll_monitor --event-flags --event Created --print0 $(ISP_PORT) | xargs -0 -n 1 -I {} make burn
 endif
 
 firmware.hex: firmware.elf

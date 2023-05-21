@@ -21,6 +21,9 @@ COMPILEFLAGS = -Wall \
 # so force the alternate implementation in avr-gcc/avr/include/util/delay.h
 COMPILEFLAGS += -D__DELAY_BACKWARD_COMPATIBLE__=true
 
+# clang doesn't have something something __ATTR_PROGMEM__
+COMPILEFLAGS += -D__ATTR_PROGMEM__='__attribute__((section(".progmem1.data")))'
+
 CFLAGS = $(COMPILEFLAGS) \
 				 -std=c99
 

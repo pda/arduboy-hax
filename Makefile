@@ -22,7 +22,7 @@ COMPILEFLAGS = -Wall \
 COMPILEFLAGS += -D__DELAY_BACKWARD_COMPATIBLE__=true
 
 # clang doesn't have something something __ATTR_PROGMEM__
-COMPILEFLAGS += -D__ATTR_PROGMEM__='__attribute__((section(".progmem1.data")))'
+COMPILEFLAGS += -D__progmem__='section(".progmem.data")'
 
 CFLAGS = $(COMPILEFLAGS) \
 				 -std=c99

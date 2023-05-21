@@ -5,14 +5,18 @@ AVRDUDE_FLAGS = -q -q \
 								-c $(ISP_PROGRAMMER) \
 								-P $(ISP_PORT)
 
-CC = avr-gcc
+CC = clang
 
 LDFLAGS = -Wl,-Map,firmware.map
+LDFLAGS += -L/opt/homebrew/opt/avr-gcc/lib/avr-gcc/9/gcc/avr/9.4.0
 
 COMPILEFLAGS = -Wall \
 							 -Werror \
 							 -g \
 							 -Os \
+							 --target=avr \
+							 --sysroot=/opt/homebrew/opt/avr-gcc \
+							 -isystem /opt/homebrew/opt/avr-gcc/avr/include \
 							 -mmcu=$(MCU) \
 							 -DF_CPU=$(F_CPU) \
 							 -DBAUD=$(BAUD)

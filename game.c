@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
+#include <avr/wdt.h>
 
 #include "game.h"
 #include "display.h"
@@ -88,6 +90,18 @@ void game() {
       }
     } else {
       player.jmp = 0; // ready for next jump
+    }
+
+    // up+down == reset
+    if ((PINF & (1<<4 | 1<<5 | 1<<6 | 1<<7)) == 0b01100000) {
+      // https://github.com/arduino/ArduinoCore-avr/blob/eabd762a1edcf076877b7bec28b7f99099141473/cores/arduino/USBCore.h#L287-L298
+      cli();
+      *(uint8_t *)0x0800 = 0x77;
+      *(uint8_t *)0x0801 = 0x77;
+      wdt_reset();
+      WDTCSR = (_BV(WDCE) | _BV(WDE));
+      WDTCSR = _BV(WDE);
+      while (true) { }
     }
 
     // crouch

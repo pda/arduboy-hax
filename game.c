@@ -2,7 +2,10 @@
 #include <string.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#include <avr/wdt.h>
+
+// wdt needs monkey-patching for clang when _WD_CONTROL_REG is >= 0x60
+// i.e. for ATmega32U4
+#include "avr-wdt.h"
 
 #include "game.h"
 #include "display.h"

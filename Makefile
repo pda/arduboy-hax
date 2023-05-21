@@ -17,6 +17,10 @@ COMPILEFLAGS = -Wall \
 							 -DF_CPU=$(F_CPU) \
 							 -DBAUD=$(BAUD)
 
+# clang doesn't have gcc's __builtin_avr_delay_cycles,
+# so force the alternate implementation in avr-gcc/avr/include/util/delay.h
+COMPILEFLAGS += -D__DELAY_BACKWARD_COMPATIBLE__=true
+
 CFLAGS = $(COMPILEFLAGS) \
 				 -std=c99
 

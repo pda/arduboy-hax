@@ -66,6 +66,9 @@ firmware.elf: $(OBJECTS)
 images/%.h: images/%.png tools
 	tools/png2c $< >$@
 
+compile_flags.txt: Makefile
+	echo "$(CFLAGS) $(LDFLAGS)" | tr ' ' '\n' > $@
+
 .depend: $(SOURCES) $(PNG_OUT)
 	rm -f -- .depend
 	$(CC) $(CFLAGS) -MM $^ > .depend;

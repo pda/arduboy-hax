@@ -27,10 +27,11 @@ int main() {
 
   game();
 
+  // (unreachable)
   // d-pad controls RGB LED
-  // while (1) {
-  //   !(PINF & 1<<5) ? LED_ON(red) : LED_OFF(red); // L
-  //   !(PINF & 1<<6) ? LED_ON(green) : LED_OFF(green); // R
-  //   !(PINF & 1<<4) ? LED_ON(blue) : LED_OFF(blue); // D
-  // }
+  while (1) {
+    !(PINF & 1<<5) ? LED_ON(led_red) : LED_OFF(led_red); // L
+    !(PINF & 1<<6) ? LED_ON(led_green) : LED_OFF(led_green); // R
+    !(PINF & 1<<4) ? LED_ON(led_blue) : LED_OFF(led_blue); // D
+  }
 }

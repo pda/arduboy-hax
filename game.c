@@ -1,6 +1,11 @@
 #include <stdbool.h>
 #include <string.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
+
+// wdt needs monkey-patching for clang when _WD_CONTROL_REG is >= 0x60
+// i.e. for ATmega32U4
+#include "avr-wdt.h"
 
 #include "game.h"
 #include "display.h"
@@ -9,11 +14,11 @@
 #include "images/plat-left.h"
 #include "images/plat-right.h"
 
-uint8_t background_buffer[sizeof(display_buffer)];
+uint8_t background_buffer[DISPLAY_BUFFER_SIZE];
 
 void game() {
   // floor
-  for (int i = 7*SSD1306_COLS; i < sizeof(display_buffer); i += sizeof(images_plat_png)) {
+  for (int i = 7*SSD1306_COLS; i < DISPLAY_BUFFER_SIZE; i += sizeof(images_plat_png)) {
     memcpy(background_buffer + i, images_plat_png, sizeof(images_plat_png));
   }
   // platform
@@ -90,6 +95,18 @@ void game() {
       player.jmp = 0; // ready for next jump
     }
 
+    // up+down == reset
+    if ((PINF & (1<<4 | 1<<5 | 1<<6 | 1<<7)) == 0b01100000) {
+      // https://github.com/arduino/ArduinoCore-avr/blob/eabd762a1edcf076877b7bec28b7f99099141473/cores/arduino/USBCore.h#L287-L298
+      cli();
+      *(uint8_t *)0x0800 = 0x77;
+      *(uint8_t *)0x0801 = 0x77;
+      wdt_reset();
+      WDTCSR = (_BV(WDCE) | _BV(WDE));
+      WDTCSR = _BV(WDE);
+      while (true) { }
+    }
+
     // crouch
     player.crouch = (PINF & 1<<4) == 0 && !player.jmp && player.x_vel == 0;
 
@@ -137,8 +154,11 @@ void game() {
       player.frame = player.frames[0]; // player-a
     }
 
-    memcpy(display_buffer, background_buffer, sizeof(background_buffer));
+    display_load_buffer(background_buffer);
+    //memcpy(display_buffer, background_buffer, sizeof(background_buffer));
     //memcpy(display_buffer + player.x, *player.frame, sizeof(*player.frame));
+
+    uint8_t * display_buffer = display_get_buffer();
 
     int row = player.y / 8;
     uint8_t bit_offset = player.y % 8;

@@ -13,6 +13,8 @@
 #define DISPLAY_WIDTH 128
 #define DISPLAY_HEIGHT 64
 
+#define DISPLAY_BUFFER_SIZE (SSD1306_PAGES * SSD1306_COLS)
+
 #define SSD1306_PAGES 8
 #define SSD1306_PAGE_MAX 7
 #define SSD1306_COLS 128
@@ -50,8 +52,6 @@
 #define SSD1306_SETCOMPINS          0xDA
 #define SSD1306_SETVCOMDETECT       0xDB
 
-uint8_t display_buffer[SSD1306_PAGES * SSD1306_COLS];
-
 struct sprite_t {
   uint8_t * frame;
   uint8_t frames[8][8];
@@ -68,7 +68,9 @@ struct sprite_t {
 };
 
 void display_init();
+uint8_t * display_get_buffer();
 void display_clear_buffer();
+void display_load_buffer(const uint8_t * src);
 void display_draw_buffer();
 void display_image(const uint8_t *);
 void display_px(uint8_t x, uint8_t y, uint8_t on);

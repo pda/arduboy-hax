@@ -1,5 +1,10 @@
 #include "led.h"
 
+// These are `extern struct` in led.h
+struct led_t led_red;
+struct led_t led_green;
+struct led_t led_blue;
+
 void led_init() {
   led_red = (struct led_t){.port = &PORTB, .ddr = &DDRB, .mask = 1<<6};
   led_green = (struct led_t){.port = &PORTB, .ddr = &DDRB, .mask = 1<<7};

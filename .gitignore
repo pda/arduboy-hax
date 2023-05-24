@@ -3,9 +3,9 @@ tools/png2c
 *.o
 .env
 .depend
-firmware.elf
-firmware.hex
-firmware.map
+/firmware.elf
+/firmware.hex
+/firmware.map
 
 # clangd LSP flags (see tools/Makefile)
-tools/compile_flags.txt
+compile_flags.txt

@@ -1,11 +1,19 @@
-#include <stdbool.h>
-#include <string.h>
+#if __AVR__
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
 // wdt needs monkey-patching for clang when _WD_CONTROL_REG is >= 0x60
 // i.e. for ATmega32U4
 #include "avr-wdt.h"
+#else
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
+#include <fcntl.h>
+#endif
+
+#include <stdbool.h>
+#include <string.h>
 
 #include "game.h"
 #include "display.h"
@@ -79,6 +87,7 @@ void game() {
       player.x_vel += 8;
     }
 
+#if __AVR__
     // jump
     if ((PINB & 1<<4) == 0) {
       if (player.gnd && !player.jmp) {
@@ -118,6 +127,28 @@ void game() {
       player.x_vel += 16;
       player.flip = false;
     }
+#else
+    fcntl(0, F_SETFL, O_NONBLOCK);
+    char c;
+    if (read(0, &c, 1)) {
+      if (player.gnd && !player.jmp) {
+        player.gnd = false;
+        player.jmp = 10;
+      }
+      if (player.jmp > 1) {
+        if (player.jmp % 2 == 0) {
+          player.y_vel -= (player.jmp * 5);
+        }
+        player.jmp--;
+      }
+    } else {
+      player.jmp = 0; // ready for next jump
+    }
+#endif
+
+#ifndef __AVR__
+    player.x_vel = 64;
+#endif
 
     // apply velocity
     x_new += (player.x_vel / 32);
@@ -180,6 +211,10 @@ void game() {
 
     display_draw_buffer();
 
+#if __AVR__
     _delay_ms(10);
+#else
+    usleep(10000);
+#endif
   }
 }

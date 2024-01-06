@@ -1,6 +1,11 @@
+#if __AVR__
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
+#else
+#include <stdio.h>
+#endif
+
 #include <stdbool.h>
 #include <string.h>
 
@@ -29,6 +34,7 @@ const uint8_t display_init_program[] = {
 };
 
 void display_init() {
+#if __AVR__
   DDRD |= (   // outputs:
       (1<<4)| // DC
       (1<<6)| // CS
@@ -40,6 +46,7 @@ void display_init() {
   PORTD &= ~(1<<7); // reset active low
   _delay_ms(10);
   PORTD |= 1<<7; // reset high
+#endif
 
   display_select_cmd();
   for (int8_t i = 0; i < sizeof(display_init_program); i++) {
@@ -63,10 +70,12 @@ void display_load_buffer(const uint8_t * src) {
   memcpy(display_buffer, src, sizeof(display_buffer));
 }
 
+#if __AVR__
 void display_draw_buffer() {
   if (dirty_page_min > dirty_page_max || dirty_col_min > dirty_col_max) {
     return;
   }
+
   // select address window
   display_select_cmd();
   spi_send_8(SSD1306_SETCOLUMNADDR);
@@ -85,6 +94,34 @@ void display_draw_buffer() {
   }
   display_set_clean();
 }
+#else
+void display_draw_buffer() {
+  printf("\x1b[1;1H"); // top left
+  printf("\x1b[?25l"); // hide cursor
+  printf(" ");
+  for (uint8_t x = 0; x < DISPLAY_WIDTH; x++) {
+    printf("#");
+  }
+  printf("\n");
+  for (int y = 0; y < DISPLAY_HEIGHT; y++) {
+    printf("#");
+    for (int x = 0; x < DISPLAY_WIDTH; x++) {
+      int index = (y/8 * DISPLAY_WIDTH) + x;
+      char byte = display_buffer[index];
+      char bit = byte & 1<<(y%8);
+      printf("%s", bit == 0 ? " " : "o");
+    }
+    printf("#");
+    printf("\n");
+  }
+  printf(" ");
+  for (uint8_t x = 0; x < DISPLAY_WIDTH; x++) {
+    printf("#");
+  }
+  printf("\n");
+  printf("\x1b[?25h"); // show cursor
+}
+#endif
 
 void display_image(const uint8_t * src) {
   display_select_cmd();
@@ -124,17 +161,23 @@ void display_px(uint8_t x, uint8_t y, uint8_t on) {
 }
 
 void display_select_cmd() {
+#if __AVR__
   PORTD &= ~(1<<6); // CS active low
   PORTD &= ~(1<<4); // DC low (cmd)
+#endif
 }
 
 void display_select_data() {
+#if __AVR__
   PORTD &= ~(1<<6); // CS active low
   PORTD |= 1<<4; // DC high (data)
+#endif
 }
 
 void display_deselect() {
+#if __AVR__
   PORTD |= 1<<6; // CS high
+#endif
 }
 
 void display_set_clean() {

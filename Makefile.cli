@@ -1,0 +1,25 @@
+CC = clang
+
+CFLAGS += -std=c17 -Wall -Werror -g
+
+CFLAGS += -DPROGMEM=
+CFLAGS += -D"_delay_ms(x)"
+CFLAGS += -D"pgm_read_byte(x)"
+
+SOURCES = main.c display.c spi.c led.c game.c
+OBJECTS = $(SOURCES:.c=.o)
+
+.PHONY: all
+all: cli
+
+cli: $(OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $^
+
+.PHONY: clean
+clean:
+	rm -f .depend $(OBJECTS)
+
+.depend: $(SOURCES) $(PNG_OUT)
+	rm -f -- .depend
+	$(CC) $(CFLAGS) -MM $^ > .depend;
+include .depend

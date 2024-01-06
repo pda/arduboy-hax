@@ -1,8 +1,11 @@
+#if __AVR__
 #include <avr/io.h>
+#endif
 
 #include "spi.h"
 
 void spi_init() {
+#if __AVR__
   DDRB &= ~(  // inputs:
       (1<<3)| // MISO
       0);
@@ -24,9 +27,12 @@ void spi_init() {
       0);
 
   SPSR = (1<<SPI2X);  // Double Clock Rate
+#endif
 }
 
 void spi_send_8(uint8_t data) {
+#if __AVR__
   SPDR = data;
   while ((SPSR & (1<<SPIF)) == 0);
+#endif
 }

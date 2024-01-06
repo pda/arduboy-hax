@@ -1,5 +1,9 @@
 #pragma once
+#if __AVR__
 #include <avr/io.h>
+#else
+#include <stdint.h>
+#endif
 
 struct led_t {
   volatile uint8_t * port;

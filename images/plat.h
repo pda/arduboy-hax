@@ -1,5 +1,7 @@
 #pragma once
+#if __AVR__
 #include <avr/pgmspace.h>
+#endif
 //  0|  # # # # #     # |
 //  1|  #   # # # # # # |
 //  2|    # # #     #   |

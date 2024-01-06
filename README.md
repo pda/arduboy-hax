@@ -38,3 +38,9 @@ Toolchain
 I think my previous (2017, 2020) work was on Arch Linux using the avr-gcc etc packages.
 
 For M1 macOS in 2023 see https://github.com/osx-cross/homebrew-avr
+
+For native build with terminal graphics:
+
+```
+make -f Makefile.cli clean cli && ./cli
+```

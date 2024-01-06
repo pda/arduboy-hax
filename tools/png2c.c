@@ -125,7 +125,10 @@ int main(int argc, char **argv) {
     var_name_p++;
   }
   printf("#pragma once\n");
+
+  printf("#if __AVR__\n");
   printf("#include <avr/pgmspace.h>\n");
+  printf("#endif\n");
   for (int y = 0; y < height; y++) {
     printf("//%3d| ", y);
     for (int x = 0; x < width; x++) {

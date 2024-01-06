@@ -1,5 +1,10 @@
 #pragma once
+#if __AVR__
 #include <avr/io.h>
+#else
+#include <stdint.h>
+#endif
+
 #include <stdbool.h>
 
 // Arduboy display: SSD1306 128x64 1-bit OLED, SPI
